@@ -2,7 +2,9 @@ package com.example.oauth2jwt.config;
 
 import com.example.oauth2jwt.jwt.JWTFilter;
 import com.example.oauth2jwt.jwt.JWTUtil;
+import com.example.oauth2jwt.oauth2.CustomLogoutFilter;
 import com.example.oauth2jwt.oauth2.CustomSuccessHandler;
+import com.example.oauth2jwt.repository.RefreshTokenRepository;
 import com.example.oauth2jwt.service.CustomOAuth2UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +17,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -27,12 +30,16 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
 
+    private final RefreshTokenRepository refreshTokenRepository;
+
     private final JWTUtil jwtUtil;
 
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, CustomSuccessHandler customSuccessHandler, JWTUtil jwtUtil) {
+    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, CustomSuccessHandler customSuccessHandler,
+                          JWTUtil jwtUtil,  RefreshTokenRepository refreshTokenRepository) {
         this.customOAuth2UserService = customOAuth2UserService;
         this.customSuccessHandler = customSuccessHandler;
         this.jwtUtil = jwtUtil;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     @Bean
@@ -61,8 +68,11 @@ public class SecurityConfig {
                 );
 
         http
+                .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshTokenRepository), LogoutFilter.class);
+
+        http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/").permitAll()
+                        .requestMatchers("/", "/reissue").permitAll()
                         .anyRequest().authenticated());
 
         http
