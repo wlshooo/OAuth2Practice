@@ -1,10 +1,7 @@
 package com.example.oauth2jwt.service;
 
+import com.example.oauth2jwt.dto.*;
 import com.example.oauth2jwt.repository.UserRepository;
-import com.example.oauth2jwt.dto.GoogleResponse;
-import com.example.oauth2jwt.dto.NaverResponse;
-import com.example.oauth2jwt.dto.OAuth2Response;
-import com.example.oauth2jwt.dto.UserDto;
 import com.example.oauth2jwt.entity.User;
 import com.example.oauth2jwt.oauth2.CustomOAuth2User;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -18,6 +15,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private static final String NAVER = "naver";
     private static final String GOOGLE = "google";
+    private static final String KAKAO = "kakao";
 
     private static final String ROLE_USER = "ROLE_USER";
 
@@ -39,6 +37,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             oAuth2Response = new NaverResponse(oAuth2User.getAttributes());
         } else if (registrationId.equals(GOOGLE)) {
             oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
+        } else if (registrationId.equals(KAKAO)) {
+            oAuth2Response = new KakaoResponse(oAuth2User.getAttributes());
         } else {
             return null;
         }
